@@ -49,12 +49,27 @@ public class PictureViewer extends JFrame implements ActionListener {
         // Area 4
         createArea4();
 
+        // Close database and application
         finish();
     }
     public void createButtonAwardArea(){
         areaButtonAward = new JPanel();
         areaButtonAward.setLayout(new BorderLayout());
         JButton awardButton = new JButton("AWARD");
+        awardButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == awardButton){
+                    try {
+                        int minVisits = Integer.parseInt(JOptionPane.showInputDialog("Minimum no of visist for getting a prize:"));
+                        picturesManager.awardPhotographers(minVisits);
+                    }catch(NumberFormatException exception){
+                        JOptionPane.showMessageDialog(null, "Wrong input, try again.", "Alert", JOptionPane.ERROR_MESSAGE);
+                        exception.printStackTrace();
+                    }
+                }
+            }
+        });
         areaButtonAward.add(awardButton, BorderLayout.CENTER);
         this.add(areaButtonAward);
     }

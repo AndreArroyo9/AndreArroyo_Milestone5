@@ -1,7 +1,9 @@
+import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PicturesManager {
     // JDBC driver name and database
@@ -122,14 +124,19 @@ public class PicturesManager {
         PreparedStatement select;
         HashMap<Integer, Integer> visitsMap = new HashMap<>();
         try {
-            select = conn.prepareStatement("SELECT PictureId, Visits FROM pictures;");
+            select = conn.prepareStatement("SELECT Photographer, Visits FROM pictures;");
             ResultSet rs = select.executeQuery();
 
+            int lastVisits = 0;
             while (rs.next()) {
-                int pictureId = rs.getInt("PictureId");
+                int photographerId = rs.getInt("Photographer");
                 int visits = rs.getInt("Visits");
 
-                visitsMap.put(pictureId,visits);
+                if (visitsMap.containsKey(photographerId)){
+                    visits+=lastVisits;
+                }
+                visitsMap.put(photographerId,visits);
+                lastVisits= visits;
             }
             select.close();
             rs.close();
@@ -141,11 +148,37 @@ public class PicturesManager {
         return null;
     }
 
+
+    public void awardPhotographers(int minVisits){
+        PreparedStatement update;
+        Photographer[] photographers = photographers();
+        createVisitsMap().forEach((photographerID, visits) ->
+        {
+            if (visits>=minVisits) {
+                awardPhotographerDB(photographerID);
+            }
+        });
+        
+    }
+
+    public void awardPhotographerDB(int photographerID){
+        PreparedStatement update;
+        try{
+            update = conn.prepareStatement("UPDATE photographers SET Awarded = true WHERE PhotographerId = ?;");
+            update.setInt(1, photographerID);
+            update.executeUpdate();
+            update.close();
+        }catch (SQLException e){
+            JOptionPane.showMessageDialog(null, "Something went wrong trying to update the photographer with id " + photographerID, "Alert", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         PicturesManager pc = new PicturesManager();
         HashMap<Integer,Integer> hashMap = pc.createVisitsMap();
         hashMap.forEach(
-                (k,v) -> System.out.println("ID:" + k + " Visitis: " + v)
+                (k,v) -> System.out.println("ID:" + k + " Visits: " + v)
         );
     }
 }
