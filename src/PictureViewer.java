@@ -77,6 +77,20 @@ public class PictureViewer extends JFrame implements ActionListener {
         areaButtonRemove = new JPanel();
         areaButtonRemove.setLayout(new BorderLayout());
         JButton removeButton = new JButton("REMOVE");
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == removeButton){
+                    for(Picture picture : picturesManager.noVisitsNoAwardedPictures()){
+                        int option = JOptionPane.showConfirmDialog(null, "Do you want to delete the picture " + picture.getTitle(), "Delete Pictures" , JOptionPane.YES_NO_OPTION);
+                        if (option < 1){
+                            picturesManager.deletePictures(picture);
+                            JOptionPane.showMessageDialog(null, "Picture" + picture.getTitle() +" deleted!");
+                        }
+                    }
+                }
+            }
+        });
         areaButtonRemove.add(removeButton, BorderLayout.CENTER);
         this.add(areaButtonRemove);
     }

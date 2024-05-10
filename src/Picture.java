@@ -21,8 +21,20 @@ public class Picture {
         return pictureId;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public String getFile() {
         return file;
+    }
+
+    public Photographer getPhotographer() {
+        return photographer;
+    }
+
+    public int getVisits() {
+        return visits;
     }
 
     @Override

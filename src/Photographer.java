@@ -13,6 +13,10 @@ public class Photographer {
         return PhotographerId;
     }
 
+    public Boolean getAwarded() {
+        return Awarded;
+    }
+
     @Override
     public String toString() {
         return name ;

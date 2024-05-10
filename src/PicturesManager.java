@@ -152,6 +152,7 @@ public class PicturesManager {
     public void awardPhotographers(int minVisits){
         PreparedStatement update;
         Photographer[] photographers = photographers();
+        // I know it is a lambda function. I haven't used chatGPT, I promise.
         createVisitsMap().forEach((photographerID, visits) ->
         {
             if (visits>=minVisits) {
@@ -173,6 +174,77 @@ public class PicturesManager {
             e.printStackTrace();
         }
     }
+    public void deletePictures(Picture picture){
+        PreparedStatement ps;
+        try{
+            ps = conn.prepareStatement("DELETE FROM pictures WHERE PictureID = ?");
+            ps.setInt(1, picture.getPictureId());
+            ps.executeUpdate();
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+    public List<Picture> noVisitsNoAwardedPictures(){
+        List<Picture> noVisitsNoAwardedPictures = new ArrayList<>();
+        for (Picture picture :allPictures()){
+            //  pictures that have never been displayed AND correspond to nonawarded photographers
+            if (!picture.getPhotographer().getAwarded() && picture.getVisits() == 0) {
+                noVisitsNoAwardedPictures.add(picture);
+            }
+        }
+        return noVisitsNoAwardedPictures;
+
+    }
+
+    public List<Picture> allPictures(){
+        List<Picture> pictures = new ArrayList<>();
+        PreparedStatement select;
+        PreparedStatement selectPhotographer;
+        try {
+            select = conn.prepareStatement("SELECT * FROM pictures;");
+            ResultSet rs = select.executeQuery();
+
+            while (rs.next()) {
+                int pictureId = rs.getInt("PictureId");
+                String title = rs.getString("Title");
+                Date datePicture = rs.getDate("DatePicture");
+                String file = rs.getString("File");
+                int visits = rs.getInt("Visits");
+                int photographerId = rs.getInt("Photographer");
+
+
+                Picture picture = new Picture(pictureId, title, datePicture, file, visits, getPhotographerDB(photographerId));
+                pictures.add(picture);
+            }
+            select.close();
+            rs.close();
+
+            return pictures;
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Photographer getPhotographerDB(int photographerId){
+        PreparedStatement ps;
+        try{
+            ps = conn.prepareStatement("SELECT * FROM photographers WHERE PhotographerId = ?;");
+            ps.setInt(1, photographerId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()){
+                String name = rs.getString("Name");
+                Boolean awarded = rs.getBoolean("Awarded");
+
+                return new Photographer(photographerId, name, awarded);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public static void main(String[] args) {
         PicturesManager pc = new PicturesManager();
